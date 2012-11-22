@@ -1,0 +1,6 @@
+version 2.3
+1. Adding new column hasRecurringProducts. new option on the widget and campaign page. table is dropped first, then created
+again.this will be removed in the next version 
+
+
+2. confirmation on deleting banners and campaigns.
