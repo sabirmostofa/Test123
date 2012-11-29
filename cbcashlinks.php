@@ -53,9 +53,12 @@ function cbcashlinks_install() {
       `replace_texts` text NOT NULL default '',
       `replace_keywords_title` varchar(255) NOT NULL default '',
       `replace_texts_title` text NOT NULL default '',
+      `serialized_custom_ads` text NOT NULL default '',
       `cmptags` tinyint(1) NOT NULL,
       `cmptop` tinyint(1) NOT NULL,
+      `cbcmpcustom` tinyint(1) NOT NULL,
       `cmpbottom` tinyint(1) NOT NULL,
+      `randomappearadd` tinyint(1) NOT NULL,
       `cmpwidth` smallint unsigned NOT NULL,
       `cmpadnum` smallint unsigned NOT NULL,
       `cmpgravity` smallint unsigned NOT NULL default '0',
@@ -791,11 +794,14 @@ function cbcashlinks_campaigns_panel() {
     $xclude_des =  (int)$_POST['xclude_des'];
     $cmp_recurr =  (int)$_POST['cmp_recurr'];
     $cmpadnum =  (int)$_POST['cmpadnum'];
+    $randomappearadd =  (int)$_POST['randomappearadd'];
+    $cbcmpcustom =  (int)$_POST['cbcmpcustom'];
     $xclude_keywords =  stripcslashes(trim($_POST['xclude_keywords'], ', '));
     $replace_keywords =  stripcslashes(trim($_POST['replace_keywords'], ', '));
     $replace_texts =  stripslashes(trim($_POST['replace_texts'], ', '));
     $replace_keywords_title =  stripcslashes(trim($_POST['replace_keywords_title'], ', '));
     $replace_texts_title =  stripslashes(trim($_POST['replace_texts_title'], ', '));
+    $serialized_custom_ads = serialize(stripslashes_deep($_POST['customads']));
 
     if (! $cmpname) {
       $cmpname = 'Untitled Campaign';
@@ -821,10 +827,13 @@ function cbcashlinks_campaigns_panel() {
           'xclude_des' => $xclude_des,
           'cmp_recurr' => $cmp_recurr,
           'xclude_keywords' => $xclude_keywords,
+          'cbcmpcustom' => $cbcmpcustom,
+          'randomappearadd' => $randomappearadd,
           'replace_keywords' => $replace_keywords,
           'replace_texts' => $replace_texts,
           'replace_keywords_title' => $replace_keywords_title,
-          'replace_texts_title' => $replace_texts_title
+          'replace_texts_title' => $replace_texts_title,
+          'serialized_custom_ads' => $serialized_custom_ads
         ));
       } else {
         $wpdb->update($table_name, array(
@@ -843,10 +852,13 @@ function cbcashlinks_campaigns_panel() {
           'xclude_des' => $xclude_des,
           'cmp_recurr' => $cmp_recurr,
           'xclude_keywords' => $xclude_keywords,
+          'cbcmpcustom' => $cbcmpcustom,
+          'randomappearadd' => $randomappearadd,
           'replace_keywords' => $replace_keywords,
           'replace_texts' => $replace_texts,
           'replace_keywords_title' => $replace_keywords_title,
-          'replace_texts_title' => $replace_texts_title
+          'replace_texts_title' => $replace_texts_title,
+          'serialized_custom_ads' => $serialized_custom_ads
         ), array('id' => $id));
 
         $saved = true;
@@ -891,11 +903,14 @@ function cbcashlinks_campaigns_panel() {
     $cmpbottom   = $getcmp['cmpbottom'];
     $cmpadnum    = $getcmp['cmpadnum'];
     $cmpcats     = unserialize($getcmp['show_cats']);
+    $serialized_custom_ads     = unserialize($getcmp['serialized_custom_ads']);
     $cmpwidth    = $getcmp['cmpwidth'];
     $isactive    = (int)$getcmp['is_active'];
     $cmpgravity  = $getcmp['cmpgravity'];
     $cmpreferral = $getcmp['cmpreferral'];
     $xclude_des  =  (int)$getcmp['xclude_des'];
+    $cbcmpcustom  =  (int)$getcmp['cbcmpcustom'];
+    $randomappearadd  =  (int)$getcmp['randomappearadd'];
     $cmp_recurr  =  (int)$getcmp['cmp_recurr'];
     $xclude_keywords =  stripslashes( $getcmp['xclude_keywords']);
     $xclude_keywords =  stripslashes( $getcmp['xclude_keywords']);
@@ -922,6 +937,8 @@ function cbcashlinks_campaigns_panel() {
       $catdrop = str_replace(' value="'.(int)$cat.'">', ' value="'.(int)$cat.'" selected="selected">', $catdrop);
     }
   }
+
+//var_dump($serialized_custom_ads);
 
 ?>
 	<div class="wrap">
@@ -988,6 +1005,58 @@ function cbcashlinks_campaigns_panel() {
             	</td>
             </tr>
             
+            <tr>
+				<td style="width: 200px;">
+                <label for="xclude_keywords">Check to add custom ads</label>
+                <p><span style="font-size: x-small; color: gray;">Insert product ID from clickbank. 
+                 Deselecting this checkbox will delete your inserted custom Product ID's </span></p>
+              </td>
+				<td>
+            		<input id='cbcmcheck' type="checkbox"  name="cbcmpcustom" value="1"<?php if ($cbcmpcustom): ?> checked="checked"<?php endif;?> />
+            	</td>
+			</tr>
+			</table>
+			
+			<div id="customdivbox">
+				<table id ="customadbox">
+					<tr id="hiddentablerow" style="display:none">						
+						<td>Product Id:</td>  
+						<td> <input type="text" name="customads[id][]"/> </td>  
+						<td>Custom Title(Optional)</td>  
+						<td> <input type="text" name="customads[title][]"/> </td>  
+						<td> Custom Description(Optional) </td>  
+						<td> <input type="text" name="customads[des][]"/> </td>  
+					</tr>
+				<?php if($cbcmpcustom): $num = count($serialized_custom_ads['id']);  for($i=1;$i<$num;$i++) : ?>
+						<tr>						
+						<td>Product Id:</td>  
+						<td> <input type="text" name="customads[id][]" value="<?php echo $serialized_custom_ads['id'][$i] ?>"/></td>  
+						<td>Custom Title(Optional)</td>  
+						<td> <input type="text" name="customads[title][]" value="<?php echo $serialized_custom_ads['title'][$i] ?>"/></td>  
+						<td> Custom Description(Optional) </td>  
+						<td> <input type="text" name="customads[des][]"value="<?php echo $serialized_custom_ads['des'][$i] ?>"/> </td>  
+					</tr>
+				
+				
+				<?php endfor; endif; ?>
+				</table>
+				<button <?php if(!$cbcmpcustom): ?> style="display:none" <?php endif; ?>  type="button" id="addanewrow" value="Add another product">Add another product</button>
+				
+			<table id="randomcheckbox" <?php if(!$cbcmpcustom): ?> style="display:none" <?php endif; ?> >
+            <tr>
+            	<td style="width: 200px;">
+                <label for="xclude_keywords">Check to select the Ads randomly</label>
+                <p><span style="font-size: x-small; color: gray;">Ads will be selected randomly</span></p>
+              </td>
+            	<td>
+            		<input type="checkbox" style="width: 200px;" name="randomappearadd" value="1"<?php if ($randomappearadd): ?> checked="checked"<?php endif;?> />
+            	</td>
+            </tr>
+            </table>
+            
+			</div>
+			<br/>
+            <table>
             <tr>
             	<td style="width: 200px;">
                 <label for="xclude_keywords">Exclude if contains Keyword:</label>
@@ -1360,7 +1429,7 @@ function cbcashlinks_get_ads($content) {
 
     if(is_array($cmp) && ! empty($cmp)) {
       // Ad HTML/CSS Code
-      $ad     = cbcashlinks_ad_html($cmp['keywords'], $cmp['tid'], $cmp['cmpadnum'], false,
+      $ad     = cbcashlinks_ad_html( $cmp['id'], $cmp['keywords'], $cmp['tid'], $cmp['cmpadnum'], false,
  'cbcashads', $cmp['cmpgravity'], $cmp['cmpreferral'], $cmp['xclude_des'], 
  $cmp['xclude_keywords'], $cmp['replace_keywords'], $cmp['replace_texts'], 
   $cmp['replace_keywords_title'], $cmp['replace_texts_title'], $cmp['cmp_recurr']);
@@ -1393,7 +1462,7 @@ $widg_id=0,$wid_gravity, $wid_referral, $wid_xclude, $wid_xclude_keywords,
  $wid_replace_keywords, $wid_replace_texts, $wid_replace_keywords_title, $wid_replace_texts_title, $cmp_recurr) {
   $content = null;
 
-  $ad     = cbcashlinks_ad_html($tid, $keywords, $links, true, 'cbcash_widget_ads'.$widg_id,
+  $ad     = cbcashlinks_ad_html(null, $tid, $keywords, $links, true, 'cbcash_widget_ads'.$widg_id,
   $wid_gravity, $wid_referral, $wid_xclude, $wid_xclude_keywords, $wid_replace_keywords, 
   $wid_replace_texts, $wid_replace_keywords_title, $wid_replace_texts_title, $cmp_recurr);
  
@@ -1658,13 +1727,25 @@ function cbcashlinks_get_replacement_texts($replace_texts){
 
 }
 
-function cbcashlinks_ad_html( $keywords, $tid, $links = null, $ignore_title = false,	
+function cbcashlinks_get_data( $name , $id  ){
+	global $wpdb;
+	$table_name = $wpdb->prefix . 'cbcash_campaigns';	
+	return $wpdb->get_var("select $name from $table_name where id=$id");	
+	}
+	
+function cbcashlinks_get_feed_var( $name , $id  ){
+	global $wpdb;
+	$table_name = $wpdb->prefix . 'cblinks_feed_data';	
+	return $wpdb->get_var("select $name from $table_name where id=$id");	
+	}
+
+function cbcashlinks_ad_html( $cmp_id= null, $keywords, $tid, $links = null, $ignore_title = false,	
 $cssshort = 'cbcashads', $min_gravity=0, $min_referral=0, $xclude_des = 0, 
 $xclude_keywords, $replace_keywords, $replace_texts, $replace_keywords_title, $replace_texts_title,
  $cmp_recurr=false ) {
+	 //var_dump($tid);
   global $wpdb;
-  $cblinks_data_table = $wpdb->prefix . 'cblinks_feed_data';
-  
+  $cblinks_data_table = $wpdb->prefix . 'cblinks_feed_data';  
   $adtitle = '';
   $cb_aff_base = "http://%s.%s.hop.clickbank.net";
   $aff_id = trim(get_option('cbcash_nickname'));
@@ -1673,7 +1754,44 @@ $xclude_keywords, $replace_keywords, $replace_texts, $replace_keywords_title, $r
 
   
   $link_number = ($links) ? $links : get_option('cbcash_ad_number') ;
+
   
+  $is_custom = cbcashlinks_get_data( 'cbcmpcustom', $cmp_id);
+  
+  //making custom ads
+  if($is_custom){
+	  $data = maybe_unserialize( cbcashlinks_get_data('serialized_custom_ads', $cmp_id));
+	  $adText = '';
+	  $custom_ad_count=count($data['id'])-1;
+	  for($i=0; $i++; $i<$custom_ad_count){
+		 $des =  cbcashlinks_get_feed_var('Description', $data['ad'][$i]);
+		 $title = $res->Title;
+		if(get_option('cbcash_seo'))
+		 $vendor = urlencode(base64_encode($res->Id));
+		else
+		 $vendor = $res->Id;
+		$link = sprintf("http://%s.%s.hop.clickbank.net/?tid=%s",$aff_id, $vendor, $tid) ;
+		
+		if($r_str){				
+			if(preg_match("?{$r_str}?i", $des)){		
+				$des = str_replace('%title%', $res->Title, $r_texts[array_rand($r_texts)]);			
+			}
+		}
+		
+		if($r_str_title){				
+			if(preg_match("?{$r_str_title}?i", $title)){		
+				$title = $r_texts_title[array_rand($r_texts_title)];			
+			}
+		}
+		
+		$adText .= "<div style='margin:5px 0'><a href=\"$link\" target='_blank'>{$title}</a><br/>{$des}</div>";
+		
+	 }
+	  
+	  
+	  return 'hm';
+	  }
+    
   $r_texts = cbcashlinks_get_replacement_texts($replace_texts); 
  
 
@@ -2030,7 +2148,7 @@ function cbcashlinks_shortcode($atts) {
 
   if(is_array($smp) && ! empty($smp)) {
     // Ad HTML/CSS Code
-    $ad     = cbcashlinks_ad_html($smp['keywords'], $smp['tid'], $smp['cmpadnum'],
+    $ad     = cbcashlinks_ad_html($smp['id'], $smp['keywords'], $smp['tid'], $smp['cmpadnum'],
      false, 'short', $smp['cmpgravity'], $smp['cmpreferral'], 
      $smp['xclude_des'], $smp['xclude_keywords'], $smp['replace_keywords'], 
      $smp['replace_texts'], $smp['replace_keywords_title'], $smp['replace_texts_title'], 

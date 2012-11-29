@@ -82,4 +82,39 @@ $('#cbdbupdate').click(function(){
         
 	})
 	
+
+$('#cbcmcheck').click(function(){
+	var checked = $('#cbcmcheck:checked').length > 0 ;
+	if(checked){
+		var adnum = Number($('input[name="cmpadnum"]').val());
+		if(adnum == 0){
+			alert("You must put the number of ads in the above field");
+			return;
+		}
+		//$('#customadbox tr:last').after('<tr>  </tr>');
+		for( var i= 0;i<adnum;i++)
+			$('#hiddentablerow').clone().appendTo('#customadbox').fadeIn('show');
+		
+		$('#addanewrow').fadeIn('slow');
+		$('#randomcheckbox').fadeIn('slow');
+		
+		
+		}else{
+			
+			$('#customadbox').find("tr:gt(0)").fadeOut('slow').remove();
+			$('#addanewrow').fadeOut('slow');
+		$('#randomcheckbox').fadeOut('slow');
+	
+	    }
+	
+	
+	
+	})
+	
+	
+$('#addanewrow').click(function(){	
+	$('#hiddentablerow').clone().appendTo('#customadbox').fadeIn('show');
+	
+	})
+	
 })
