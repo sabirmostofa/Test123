@@ -1736,7 +1736,7 @@ function cbcashlinks_get_data( $name , $id  ){
 function cbcashlinks_get_feed_var( $name , $id  ){
 	global $wpdb;
 	$table_name = $wpdb->prefix . 'cblinks_feed_data';	
-	return $wpdb->get_var("select $name from $table_name where id=$id");	
+	return $wpdb->get_var("select $name from $table_name where id='$id'");	
 	}
 
 function cbcashlinks_ad_html( $cmp_id= null, $keywords, $tid, $links = null, $ignore_title = false,	
@@ -1763,33 +1763,79 @@ $xclude_keywords, $replace_keywords, $replace_texts, $replace_keywords_title, $r
 	  $data = maybe_unserialize( cbcashlinks_get_data('serialized_custom_ads', $cmp_id));
 	  $adText = '';
 	  $custom_ad_count=count($data['id'])-1;
-	  for($i=0; $i++; $i<$custom_ad_count){
-		 $des =  cbcashlinks_get_feed_var('Description', $data['ad'][$i]);
-		 $title = $res->Title;
+	
+	  $resArray = array();
+// first one is empty 
+	  for($i=1; $i<=$custom_ad_count; $i++){
+		 $id = trim($data['id'][$i]);		
+		 $des =   (trim($data['des'][$i]) == '') ? cbcashlinks_get_feed_var('Description', $id):trim($data['des'][$i]) ;
+		 $title =   (trim($data['title'][$i]) == '')? cbcashlinks_get_feed_var('Title', $id ):trim($data['title'][$i]);
+		$resArray[$i-1] = array($id, $title, $des);		
+		
+	}
+	
+	
+	if(cbcashlinks_get_data('randomappearadd', $cmp_id) || $custom_ad_count > $link_number ){
+		shuffle($resArray);
+		$resArray = array_chunk($resArray, $link_number);
+		$resArray = $resArray[0];
+	}
+	
+		
+		
+	foreach($resArray as $res){
+		
 		if(get_option('cbcash_seo'))
-		 $vendor = urlencode(base64_encode($res->Id));
+		 $vendor = urlencode(base64_encode($res[0]));
 		else
-		 $vendor = $res->Id;
-		$link = sprintf("http://%s.%s.hop.clickbank.net/?tid=%s",$aff_id, $vendor, $tid) ;
-		
-		if($r_str){				
-			if(preg_match("?{$r_str}?i", $des)){		
-				$des = str_replace('%title%', $res->Title, $r_texts[array_rand($r_texts)]);			
-			}
-		}
-		
-		if($r_str_title){				
-			if(preg_match("?{$r_str_title}?i", $title)){		
-				$title = $r_texts_title[array_rand($r_texts_title)];			
-			}
-		}
-		
-		$adText .= "<div style='margin:5px 0'><a href=\"$link\" target='_blank'>{$title}</a><br/>{$des}</div>";
+		 $vendor = $res[0];
+		$link = sprintf("http://%s.%s.hop.clickbank.net/?tid=%s",$aff_id, $vendor, $tid) ;		
+		$adText .= "<div style='margin:5px 0'><a href=\"$link\" target='_blank'>{$res[1]}</a><br/>{$res[2]}</div>";
 		
 	 }
+	 
+	   $code = <<<EOT
+  <div class="$cssshort">
+    {title}
+    
+    {adtext}
+    
+
+
+    <script type="text/javascript">
+    /*
+    <!--
+    hopfeed_affiliate = '{nickname}';
+    hopfeed_affiliate_tid = '{tid}';
+    hopfeed_fill_slots = true;
+    hopfeed_rows = {ads};
+    hopfeed_cols = 1;
+    hopfeed_keywords = '{keywords}';
+    hopfeed_width = '{ad_width}';
+    hopfeed_type = 'LIST';
+    hopfeed_path = 'http://www.hopfeed.com';
+    -->
+    */
+    </script>
+<!--
+    <script type="text/javascript" src="http://www.hopfeed.com/script/hopfeed.js"></script>
+-->
+  </div>
+EOT;
+
+  if(trim(get_option('cbcash_ad_title')) != '' && ! $ignore_title) {
+    $adtitle = '<div style="text-align: left; font-weight: bold; margin: 0 0 15px 0; clear:both;">'.get_option('cbcash_ad_title').'</div>';
+  }
+
+
+  $code = str_replace(
+            array('{adtext}',  '{ad_width}', '{title}'),
+            array( $adText, get_option('cbcash_ad_width'), $adtitle),
+            $code
+          );
 	  
 	  
-	  return 'hm';
+	  return $code;
 	  }
     
   $r_texts = cbcashlinks_get_replacement_texts($replace_texts); 
