@@ -51,10 +51,13 @@ function cbcashlinks_install() {
       `xclude_keywords` varchar(255) NOT NULL default '',
       `replace_keywords` varchar(255) NOT NULL default '',
       `replace_texts` text NOT NULL default '',
+      `replace_keywords_title` varchar(255) NOT NULL default '',
+      `replace_texts_title` text NOT NULL default '',
       `cmptags` tinyint(1) NOT NULL,
       `cmptop` tinyint(1) NOT NULL,
       `cmpbottom` tinyint(1) NOT NULL,
       `cmpwidth` smallint unsigned NOT NULL,
+      `cmpadnum` smallint unsigned NOT NULL,
       `cmpgravity` smallint unsigned NOT NULL default '0',
       `cmpreferral` smallint unsigned NOT NULL default '0',
       `show_cats` text NOT NULL,
@@ -787,9 +790,12 @@ function cbcashlinks_campaigns_panel() {
     $cmpreferral =	(int)$_POST['cmpreferral'];
     $xclude_des =  (int)$_POST['xclude_des'];
     $cmp_recurr =  (int)$_POST['cmp_recurr'];
+    $cmpadnum =  (int)$_POST['cmpadnum'];
     $xclude_keywords =  stripcslashes(trim($_POST['xclude_keywords'], ', '));
     $replace_keywords =  stripcslashes(trim($_POST['replace_keywords'], ', '));
     $replace_texts =  stripslashes(trim($_POST['replace_texts'], ', '));
+    $replace_keywords_title =  stripcslashes(trim($_POST['replace_keywords_title'], ', '));
+    $replace_texts_title =  stripslashes(trim($_POST['replace_texts_title'], ', '));
 
     if (! $cmpname) {
       $cmpname = 'Untitled Campaign';
@@ -801,6 +807,7 @@ function cbcashlinks_campaigns_panel() {
       if ($_POST['action'] == 'newcmp') {
         $wpdb->insert($table_name, array(
           'cmpname'   => $cmpname,
+          'cmpadnum'  => $cmpadnum,
           'tid'       => $cmptid,
           'keywords'  => $cmpkeywords,
           'cmptags'   => $cmptags,
@@ -815,11 +822,14 @@ function cbcashlinks_campaigns_panel() {
           'cmp_recurr' => $cmp_recurr,
           'xclude_keywords' => $xclude_keywords,
           'replace_keywords' => $replace_keywords,
-          'replace_texts' => $replace_texts
+          'replace_texts' => $replace_texts,
+          'replace_keywords_title' => $replace_keywords_title,
+          'replace_texts_title' => $replace_texts_title
         ));
       } else {
         $wpdb->update($table_name, array(
           'cmpname'   => $cmpname,
+          'cmpadnum'  => $cmpadnum,
           'tid'       => $cmptid,
           'keywords'  => $cmpkeywords,
           'cmptags'   => $cmptags,
@@ -834,7 +844,9 @@ function cbcashlinks_campaigns_panel() {
           'cmp_recurr' => $cmp_recurr,
           'xclude_keywords' => $xclude_keywords,
           'replace_keywords' => $replace_keywords,
-          'replace_texts' => $replace_texts
+          'replace_texts' => $replace_texts,
+          'replace_keywords_title' => $replace_keywords_title,
+          'replace_texts_title' => $replace_texts_title
         ), array('id' => $id));
 
         $saved = true;
@@ -877,6 +889,7 @@ function cbcashlinks_campaigns_panel() {
     $cmptags     = $getcmp['cmptags'];
     $cmptop      = $getcmp['cmptop'];
     $cmpbottom   = $getcmp['cmpbottom'];
+    $cmpadnum    = $getcmp['cmpadnum'];
     $cmpcats     = unserialize($getcmp['show_cats']);
     $cmpwidth    = $getcmp['cmpwidth'];
     $isactive    = (int)$getcmp['is_active'];
@@ -885,8 +898,11 @@ function cbcashlinks_campaigns_panel() {
     $xclude_des  =  (int)$getcmp['xclude_des'];
     $cmp_recurr  =  (int)$getcmp['cmp_recurr'];
     $xclude_keywords =  stripslashes( $getcmp['xclude_keywords']);
+    $xclude_keywords =  stripslashes( $getcmp['xclude_keywords']);
     $replace_keywords =  stripslashes( $getcmp['replace_keywords']);
     $replace_texts =  stripslashes($getcmp['replace_texts']);
+    $replace_keywords_title =  stripslashes( $getcmp['replace_keywords_title']);
+    $replace_texts_title =  stripslashes($getcmp['replace_texts_title']);
   }
 
   $catdrop = wp_dropdown_categories(
@@ -964,6 +980,16 @@ function cbcashlinks_campaigns_panel() {
             
             <tr>
             	<td style="width: 200px;">
+                <label for="cmpkeywords">Number of Ads:</label>
+                <p><span style="font-size: x-small; color: gray;">Number of Ads(If not inserted, default settings will be used)</span></p>
+              </td>
+            	<td>
+            		<input type="text" style="width: 200px;" name="cmpadnum" value="<?php echo $cmpadnum; ?>">
+            	</td>
+            </tr>
+            
+            <tr>
+            	<td style="width: 200px;">
                 <label for="xclude_keywords">Exclude if contains Keyword:</label>
                 <p><span style="font-size: x-small; color: gray;">Ad description having any of the keywords will be excluded. Seperate the keywords with a comma.</span></p>
               </td>
@@ -989,6 +1015,29 @@ function cbcashlinks_campaigns_panel() {
               </td>
             	<td>
             		<textarea rows=6 cols=60 name="replace_texts"><?php echo $replace_texts; ?></textarea>
+            	</td>
+            </tr>
+            </table>
+            <!-- Title Replacement -->
+            <h4 style="font-weight:bold">Title Replacement options:</h4>
+            <table>
+            <tr>
+            	<td style="width: 200px;">
+                <label for="replace_keywords">Replace if contains Keywords  :</label>
+                <p><span style="font-size: x-small; color: gray;">Ad Title having any of the keywords will be replaced by the following texts. Seperate the keywords with a comma.</span></p>
+              </td>
+            	<td>
+            		<input type="text" style="width: 200px;" name="replace_keywords_title" value="<?php echo $replace_keywords_title; ?>">
+            	</td>
+            </tr>
+            
+            <tr>
+            	<td style="width: 200px;">
+                <label for="replace_texts">Replacement Texts:</label>
+                <p><span style="font-size: x-small; color: gray;">Ad Title will be replaced by the any of the following texts randomly. Separate the texts by a new line. Tag available: %title%</span></p>
+              </td>
+            	<td>
+            		<textarea rows=6 cols=60 name="replace_texts_title"><?php echo $replace_texts_title; ?></textarea>
             	</td>
             </tr>
             
@@ -1311,9 +1360,10 @@ function cbcashlinks_get_ads($content) {
 
     if(is_array($cmp) && ! empty($cmp)) {
       // Ad HTML/CSS Code
-      $ad     = cbcashlinks_ad_html($cmp['keywords'], $cmp['tid'], null, false,
+      $ad     = cbcashlinks_ad_html($cmp['keywords'], $cmp['tid'], $cmp['cmpadnum'], false,
  'cbcashads', $cmp['cmpgravity'], $cmp['cmpreferral'], $cmp['xclude_des'], 
- $cmp['xclude_keywords'], $cmp['replace_keywords'], $cmp['replace_texts'], $cmp['cmp_recurr']);
+ $cmp['xclude_keywords'], $cmp['replace_keywords'], $cmp['replace_texts'], 
+  $cmp['replace_keywords_title'], $cmp['replace_texts_title'], $cmp['cmp_recurr']);
  
       $ad_css = cbcashlinks_ad_css($cmp['cmpwidth']);
 
@@ -1339,11 +1389,13 @@ function cbcashlinks_get_ads($content) {
 }
 
 function cbcashlinks_get_widget_ads($keywords, $tid, $links = 5, $width = 200,
-$widg_id=0,$wid_gravity, $wid_referral, $wid_xclude, $wid_xclude_keywords, $wid_replace_keywords, $wid_replace_texts, $cmp_recurr) {
+$widg_id=0,$wid_gravity, $wid_referral, $wid_xclude, $wid_xclude_keywords,
+ $wid_replace_keywords, $wid_replace_texts, $wid_replace_keywords_title, $wid_replace_texts_title, $cmp_recurr) {
   $content = null;
 
   $ad     = cbcashlinks_ad_html($tid, $keywords, $links, true, 'cbcash_widget_ads'.$widg_id,
-  $wid_gravity, $wid_referral, $wid_xclude, $wid_xclude_keywords, $wid_replace_keywords, $wid_replace_texts, $cmp_recurr);
+  $wid_gravity, $wid_referral, $wid_xclude, $wid_xclude_keywords, $wid_replace_keywords, 
+  $wid_replace_texts, $wid_replace_keywords_title, $wid_replace_texts_title, $cmp_recurr);
  
   $ad_css = cbcashlinks_ad_css($width, 'cbcash_widget_ads'.$widg_id);
 
@@ -1364,7 +1416,7 @@ function cbcashlinks_pick_campaign($camp_name = null) {
 
   $table_name = $wpdb->prefix . 'cbcash_campaigns';
   
-  $cmps = $wpdb->get_results('SELECT keywords, tid, cmptop, cmpbottom, show_cats, cmpwidth, cmptags,cmpgravity,cmpreferral,xclude_des,xclude_keywords, replace_keywords, replace_texts, cmp_recurr FROM ' . $table_name . ' WHERE is_active = 1' . (($camp_name) ? ' AND LOWER(cmpname) = \'' . $camp_name . '\'' : null), ARRAY_A);
+  $cmps = $wpdb->get_results('SELECT * FROM ' . $table_name . ' WHERE is_active = 1' . (($camp_name) ? ' AND LOWER(cmpname) = \'' . $camp_name . '\'' : null), ARRAY_A);
   $return = array();
 
   if($cmps) {
@@ -1606,9 +1658,10 @@ function cbcashlinks_get_replacement_texts($replace_texts){
 
 }
 
-function cbcashlinks_ad_html($keywords, $tid, $links = null, $ignore_title = false,	
+function cbcashlinks_ad_html( $keywords, $tid, $links = null, $ignore_title = false,	
 $cssshort = 'cbcashads', $min_gravity=0, $min_referral=0, $xclude_des = 0, 
-$xclude_keywords, $replace_keywords, $replace_texts, $cmp_recurr=false) {
+$xclude_keywords, $replace_keywords, $replace_texts, $replace_keywords_title, $replace_texts_title,
+ $cmp_recurr=false ) {
   global $wpdb;
   $cblinks_data_table = $wpdb->prefix . 'cblinks_feed_data';
   
@@ -1628,7 +1681,11 @@ $xclude_keywords, $replace_keywords, $replace_texts, $cmp_recurr=false) {
   $w_str = cbcashlinks_build_regex_string($keywords);
   $x_str = cbcashlinks_build_regex_string($xclude_keywords);
   $r_str = cbcashlinks_build_regex_string($replace_keywords,true);
- 
+  $r_str_title = cbcashlinks_build_regex_string( $replace_keywords_title,true );
+  $r_texts_title = cbcashlinks_get_replacement_texts( $replace_texts_title );
+  
+  
+ // getting from the settings page if not contains on the campaign page
   if(!$r_str){
 	  
 	$r_str = cbcashlinks_build_regex_string(get_option('cb_replace_keywords'));
@@ -1678,6 +1735,7 @@ $xclude_keywords, $replace_keywords, $replace_texts, $cmp_recurr=false) {
  $adText = '';
  foreach($results as $res){
 	 $des = $res->Description;
+	 $title = $res->Title;
 	if(get_option('cbcash_seo'))
 	 $vendor = urlencode(base64_encode($res->Id));
 	else
@@ -1690,7 +1748,13 @@ $xclude_keywords, $replace_keywords, $replace_texts, $cmp_recurr=false) {
 		}
 	}
 	
-	$adText .= "<div style='margin:5px 0'><a href=\"$link\" target='_blank'>{$res->Title}</a><br/>{$des}</div>";
+	if($r_str_title){				
+		if(preg_match("?{$r_str_title}?i", $title)){		
+			$title = $r_texts_title[array_rand($r_texts_title)];			
+		}
+	}
+	
+	$adText .= "<div style='margin:5px 0'><a href=\"$link\" target='_blank'>{$title}</a><br/>{$des}</div>";
 	
  }
  
@@ -1801,6 +1865,8 @@ class CBCashlinks_Widget extends WP_Widget {
     $wid_xclude_keywords = $instance['xclude_keywords'];
     $wid_replace_keywords = $instance['replace_keywords'];
     $wid_replace_texts = $instance['replace_texts'];
+    $wid_replace_keywords_title = $instance['replace_keywords_title'];
+    $wid_replace_texts_title = $instance['replace_texts_title'];
 
     echo $before_widget;
 
@@ -1810,7 +1876,8 @@ class CBCashlinks_Widget extends WP_Widget {
 
     echo cbcashlinks_get_widget_ads($wid_trackid, $wid_keywords, $wid_links,
     $wid_width,$this->id,$wid_gravity, $wid_referral, $wid_xclude, 
-    $wid_xclude_keywords, $wid_replace_keywords, $wid_replace_texts, $cmp_recurr);
+    $wid_xclude_keywords, $wid_replace_keywords, $wid_replace_texts, 
+    $wid_replace_keywords_title, $wid_replace_texts_title, $cmp_recurr);
     echo $after_widget;    
   }
 
@@ -1829,6 +1896,8 @@ class CBCashlinks_Widget extends WP_Widget {
   	$instance['xclude_keywords'] = trim($new_instance['xclude_keywords'], ', ') ;
   	$instance['replace_keywords'] = trim($new_instance['replace_keywords'], ', ') ;
   	$instance['replace_texts'] = trim($new_instance['replace_texts'], ', ') ;
+  	$instance['replace_keywords_title'] = trim($new_instance['replace_keywords_title'], ', ') ;
+  	$instance['replace_texts_title'] = trim($new_instance['replace_texts_title'], ', ') ;
 	
     return $instance;
   }
@@ -1846,6 +1915,8 @@ class CBCashlinks_Widget extends WP_Widget {
     $wid_xclude_keywords = $instance['xclude_keywords'];
     $wid_replace_keywords = $instance['replace_keywords'];
     $wid_replace_texts = $instance['replace_texts'];
+    $wid_replace_keywords_title = $instance['replace_keywords_title'];
+    $wid_replace_texts_title = $instance['replace_texts_title'];
 
     ?>
         <p>
@@ -1875,8 +1946,10 @@ class CBCashlinks_Widget extends WP_Widget {
             <input type="text" value="<?php echo $wid_xclude_keywords; ?>" id="<?php echo $this->get_field_id('xclude_keywords'); ?>" name="<?php echo $this->get_field_name('xclude_keywords'); ?>" style="width: 225px;" />
           </label>
         </p>
-        <p>
-			
+        <!-- Replacement for description -->
+        
+        <h5> Description Replacement: </h5>        
+        <p>			
           <label for="<?php echo $this->get_field_id('replace_keywords'); ?>">
             <?php _e('Replace if has Keywords:'); ?><br />
             <input type="text" value="<?php echo $wid_replace_keywords; ?>" id="<?php echo $this->get_field_id('replace_keywords'); ?>" name="<?php echo $this->get_field_name('replace_keywords'); ?>" style="width: 225px;" />
@@ -1885,6 +1958,20 @@ class CBCashlinks_Widget extends WP_Widget {
           <label for="<?php echo $this->get_field_id('replace_texts'); ?>">
             <?php _e('Replacement Texts(separate by newline): Available Tag: %title%'); ?><br />
             <textarea rows=5 cols=40  id="<?php echo $this->get_field_id('replace_texts'); ?>" name="<?php echo $this->get_field_name('replace_texts'); ?>" style="width: 225px;"><?php echo $wid_replace_texts; ?></textarea>
+          </label>
+        </p>
+        
+        <!-- Replacement for Title -->
+        <h5> Title Replacement: </h5>
+        <p>			
+          <label for="<?php echo $this->get_field_id('replace_keywords_title'); ?>">
+            <?php _e('Replace if has Keywords:'); ?><br />
+            <input type="text" value="<?php echo $wid_replace_keywords_title; ?>" id="<?php echo $this->get_field_id('replace_keywords_title'); ?>" name="<?php echo $this->get_field_name('replace_keywords_title'); ?>" style="width: 225px;" />
+          </label>
+        </p>
+          <label for="<?php echo $this->get_field_id('replace_texts_title'); ?>">
+            <?php _e('Replacement Texts(separate by newline): Available Tag: %title%'); ?><br />
+            <textarea rows=5 cols=40  id="<?php echo $this->get_field_id('replace_texts_title'); ?>" name="<?php echo $this->get_field_name('replace_texts_title'); ?>" style="width: 225px;"><?php echo $wid_replace_texts_title; ?></textarea>
           </label>
         </p>
         
@@ -1943,9 +2030,11 @@ function cbcashlinks_shortcode($atts) {
 
   if(is_array($smp) && ! empty($smp)) {
     // Ad HTML/CSS Code
-    $ad     = cbcashlinks_ad_html($smp['keywords'], $smp['tid'], null,
+    $ad     = cbcashlinks_ad_html($smp['keywords'], $smp['tid'], $smp['cmpadnum'],
      false, 'short', $smp['cmpgravity'], $smp['cmpreferral'], 
-     $smp['xclude_des'], $smp['xclude_keywords'], $smp['replace_keywords'], $smp['replace_texts'], $smp['cmp_recurr'] );
+     $smp['xclude_des'], $smp['xclude_keywords'], $smp['replace_keywords'], 
+     $smp['replace_texts'], $smp['replace_keywords_title'], $smp['replace_texts_title'], 
+     $smp['cmp_recurr'] );
      
     $ad_css = cbcashlinks_ad_css($smp['cmpwidth'], 'short');
 
