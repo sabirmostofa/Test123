@@ -3,11 +3,11 @@
 /*
 Plugin Name: CB Cashlinks
 Plugin URI: http://www.cbcashlinks.com/
-Version: 2.3
+Version: 2.4
 Author: Scott Inman
 Description: The Best Clickbank WordPress Plugin On The Market.
 */
-$cb_cashlinks_plugin_version = 2.3;
+$cb_cashlinks_plugin_version = 2.4;
 register_activation_hook( __FILE__, 'cbcashlinks_install' );
 register_deactivation_hook( __FILE__, 'cbcashlinks_uninstall' );
 
@@ -653,7 +653,7 @@ function cbcashlinks_banners_panel() {
                 		<td>Bottom:</td><td><input type="text" style="width: 50px;" name="adpads[bottom]" value="<?php echo ((isset($adpads['bottom'])) ? $adpads['bottom'] : ''); ?>" /> px</td>
               		</tr>
               		<tr>
-                		<td>Right:</td><td><input type="text" style="width: 50px;" name="adpads[right]" value="<?php echo ((isset($adpads['right'])) ? $adpads['top'] : ''); ?>" /> px</td>
+                		<td>Right:</td><td><input type="text" style="width: 50px;" name="adpads[right]" value="<?php echo ((isset($adpads['right'])) ? $adpads['right'] : ''); ?>" /> px</td>
               		</tr>
               		<tr>
                 		<td>Left:</td><td><input type="text" style="width: 50px;" name="adpads[left]" value="<?php echo ((isset($adpads['left'])) ? $adpads['left'] : ''); ?>" /> px</td>
@@ -807,7 +807,7 @@ function cbcashlinks_campaigns_panel() {
       $cmpname = 'Untitled Campaign';
     }
 
-    if (! $cmpkeywords && ! $cmptags) {
+    if (! $cmpkeywords && ! $cmptags && !$cbcmpcustom) {
       $error = true;
     } else {
       if ($_POST['action'] == 'newcmp') {
@@ -955,7 +955,9 @@ function cbcashlinks_campaigns_panel() {
           <div class="inside">
 
 <?php if ($error): ?>
-          <span style="color: red;">Error! Please double check your fields.</span>
+		
+          <span style="color: red;">Error! You need to insert at least one keyword or select the 
+           option to use post tags as keywords</span>
 <?php endif; ?>
 
 <?php if ($id && $saved): ?>
@@ -985,7 +987,7 @@ function cbcashlinks_campaigns_panel() {
             	</td>
             </tr>
 
-            <tr>
+            <tr id="keywordstohide">
             	<td style="width: 200px;">
                 <label for="cmpkeywords">Keywords:</label>
                 <p><span style="font-size: x-small; color: gray;">The keywords will be used to find related ads. Seperate the keywords with a comma.</span></p>
@@ -1046,9 +1048,12 @@ function cbcashlinks_campaigns_panel() {
             <tr>
             	<td style="width: 200px;">
                 <label for="xclude_keywords">Check to select the Ads randomly</label>
+           
                 <p><span style="font-size: x-small; color: gray;">Ads will be selected randomly</span></p>
-              </td>
-            	<td>
+				</td>
+          
+            
+            	<td style="vertical-align:top">
             		<input type="checkbox" style="width: 200px;" name="randomappearadd" value="1"<?php if ($randomappearadd): ?> checked="checked"<?php endif;?> />
             	</td>
             </tr>
@@ -1056,7 +1061,7 @@ function cbcashlinks_campaigns_panel() {
             
 			</div>
 			<br/>
-            <table>
+            <table id="excludektohide">
             <tr>
             	<td style="width: 200px;">
                 <label for="xclude_keywords">Exclude if contains Keyword:</label>
@@ -1088,8 +1093,8 @@ function cbcashlinks_campaigns_panel() {
             </tr>
             </table>
             <!-- Title Replacement -->
-            <h4 style="font-weight:bold">Title Replacement options:</h4>
-            <table>
+            <h4 id="trotohide" style="font-weight:bold">Title Replacement options:</h4>
+            <table id="excludettohide">
             <tr>
             	<td style="width: 200px;">
                 <label for="replace_keywords">Replace if contains Keywords  :</label>
@@ -1103,7 +1108,7 @@ function cbcashlinks_campaigns_panel() {
             <tr>
             	<td style="width: 200px;">
                 <label for="replace_texts">Replacement Texts:</label>
-                <p><span style="font-size: x-small; color: gray;">Ad Title will be replaced by the any of the following texts randomly. Separate the texts by a new line. Tag available: %title%</span></p>
+                <p><span style="font-size: x-small; color: gray;">Ad Title will be replaced by the any of the following texts randomly. Separate the texts by a new line. </span></p>
               </td>
             	<td>
             		<textarea rows=6 cols=60 name="replace_texts_title"><?php echo $replace_texts_title; ?></textarea>
@@ -1159,7 +1164,8 @@ function cbcashlinks_campaigns_panel() {
             		<input type="checkbox" name="cmptags" value="1"<?php if ($cmptags): ?> checked="checked"<?php endif;?>>
             	</td>
             </tr>
-
+           </table>
+			 <table>
             <tr>
             	<td>
                 <label for="adheight">Ad Location:</label>
@@ -1446,9 +1452,11 @@ function cbcashlinks_get_ads($content) {
         $content = $ad . "\r\n" . $content . "\r\n" . $ad;
       } elseif ($cmp['cmpbottom']) {
         $content = $content . "\r\n" . $ad;
-      } else {
+      } elseif($cmp['cmptop']) {
         $content = $ad . "\r\n" . $content;
-      }
+      }else{
+		return $content;  
+		}
 
       $content = $ad_css . "\r\n" . $content . "\r\n" . $ad_seo;
     }

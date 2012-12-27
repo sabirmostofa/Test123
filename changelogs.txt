@@ -4,3 +4,10 @@ again.this will be removed in the next version
 
 
 2. confirmation on deleting banners and campaigns.
+
+version 2.4
+Title replacement feature added.
+Custom ads feuture added
+ad numbers added in the campaigns pannel
+new table fieldds added for campaigns table
+bug fixed on ad top/bottom

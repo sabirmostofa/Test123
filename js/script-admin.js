@@ -85,7 +85,9 @@ $('#cbdbupdate').click(function(){
 
 $('#cbcmcheck').click(function(){
 	var checked = $('#cbcmcheck:checked').length > 0 ;
+	
 	if(checked){
+		$('#keywordstohide,#excludektohide,#excludettohide,#trotohide').fadeOut();
 		var adnum = Number($('input[name="cmpadnum"]').val());
 		if(adnum == 0){
 			alert("You must put the number of ads in the above field");
@@ -100,6 +102,7 @@ $('#cbcmcheck').click(function(){
 		
 		
 		}else{
+			$('#keywordstohide,#excludektohide,#excludettohide,#trotohide').fadeIn();
 			
 			$('#customadbox').find("tr:gt(0)").fadeOut('slow').remove();
 			$('#addanewrow').fadeOut('slow');
